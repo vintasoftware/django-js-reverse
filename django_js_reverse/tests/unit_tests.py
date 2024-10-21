@@ -20,7 +20,6 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.management import call_command
 from django.template import Context, RequestContext, Template
 from django.utils.encoding import smart_str
-import js2py
 from helper import is_django_ver_gte_2
 from utils import script_prefix
 
@@ -51,9 +50,6 @@ def node_jseval(expr):
     return re.sub(r'\n$', '', stdout)
 
 
-def js2py_jseval(expr):
-    return js2py.eval_js(expr)
-
 
 class AbstractJSReverseTestCase(object):
     client = Client()
@@ -75,7 +71,6 @@ class AbstractJSReverseTestCase(object):
             return expected_url(jseval)
 
         self.assertEqual(node_jseval(module), url(node_jseval))
-        self.assertEqual(js2py_jseval('(function () {{ {} }}())'.format(script)), url(js2py_jseval))
 
     def assertEqualJSUrlEval(self, *args, **kwargs):
         js = smart_str(self.client.post('/jsreverse/').content)

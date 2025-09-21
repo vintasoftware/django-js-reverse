@@ -47,7 +47,7 @@ setup(
     long_description=read('README.rst') + '\n\n' + read('CHANGELOG.rst'),
     author='Bernhard Janetzki',
     author_email='boerni@gmail.com',
-    url='https://github.com/ierror/django-js-reverse',
+    url='https://github.com/vintasoftware/django-js-reverse',
     download_url='http://pypi.python.org/pypi/django-js-reverse/',
     packages=find_packages(),
     package_data={

@@ -79,7 +79,7 @@ def prepare_url_list(urlresolver, namespace_path='', namespace=''):
             inner_urlresolver = urlresolvers.get_ns_resolver(
                 inner_ns_path,
                 inner_urlresolver,
-                tuple(getattr(urlresolver.pattern, 'converters', {}).items()),
+                tuple(urlresolver.pattern.converters.items()),
             )
             inner_ns_path = ''
 

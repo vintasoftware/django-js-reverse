@@ -23,7 +23,7 @@ Overview
 --------
 
 Django JS Reverse is a small django app that makes url handling of
-`named urls <https://docs.djangoproject.com/en/6.0/topics/http/urls/#naming-url-patterns>`__ in javascript easy and non-annoying..
+`named urls <https://docs.djangoproject.com/en/stable/topics/http/urls/#naming-url-patterns>`__ in javascript easy and non-annoying..
 
 For example you can retrieve a named url:
 

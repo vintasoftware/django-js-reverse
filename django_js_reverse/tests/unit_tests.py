@@ -36,6 +36,18 @@ from django.test import TestCase, RequestFactory  # noqa: E402 isort:skip
 from django.test.client import Client  # noqa: E402 isort:skip
 from django.test.utils import override_settings  # noqa: E402 isort:skip
 
+REQUEST_CONTEXT_PROCESSOR_TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.request',
+            ],
+        },
+    },
+]
+
 
 @contextlib.contextmanager
 def mkdtemp(*args, **kwargs):
@@ -310,6 +322,7 @@ class JSReverseStaticFileSaveTest(AbstractJSReverseTestCase, TestCase):
 
 @override_settings(ROOT_URLCONF='django_js_reverse.tests.test_urls')
 class JSReverseTemplateTagTest(AbstractJSReverseTestCase, TestCase):
+    @override_settings(TEMPLATES=REQUEST_CONTEXT_PROCESSOR_TEMPLATES)
     def test_tpl_tag_with_request_in_context(self):
         request = RequestFactory().post('/jsreverse/')
         request.urlconf = 'django_js_reverse.tests.test_urlconf_urls'

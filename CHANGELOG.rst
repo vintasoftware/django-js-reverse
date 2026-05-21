@@ -1,5 +1,5 @@
 1.0.0 (2026-05-21)
-----------
+---------------------
 
 - Support Django 5.2 LTS and 6.0 only, dropping unsupported release series.
 - Migrate CI from Travis CI to GitHub Actions and refresh the supported tox matrix.

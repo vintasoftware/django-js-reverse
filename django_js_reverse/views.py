@@ -2,12 +2,9 @@
 import json
 
 from django import http
-from django_js_reverse import core
+from django.urls import get_resolver
 
-try:
-    from django.urls import get_resolver
-except ImportError:
-    from django.core.urlresolvers import get_resolver
+from django_js_reverse import core
 
 
 def _urls_js(fn, type):

@@ -13,23 +13,40 @@ import tempfile
 import contextlib
 import shutil
 
-import six
 import django
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management import call_command
 from django.template import Context, RequestContext, Template
 from django.utils.encoding import smart_str
-import js2py
-from helper import is_django_ver_gte_2
-from utils import script_prefix
+from django_js_reverse.tests.utils import script_prefix
+
+js2py = None
+# Js2Py relies on Python bytecode details that changed in Python 3.13.
+if sys.version_info < (3, 13):
+    try:
+        import js2py
+    except (ImportError, RuntimeError):
+        js2py = None
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..') + os.sep)
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'django_js_reverse.tests.settings'
 
 from django.test import TestCase, RequestFactory  # noqa: E402 isort:skip
 from django.test.client import Client  # noqa: E402 isort:skip
 from django.test.utils import override_settings  # noqa: E402 isort:skip
+
+REQUEST_CONTEXT_PROCESSOR_TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.request',
+            ],
+        },
+    },
+]
 
 
 @contextlib.contextmanager
@@ -45,7 +62,7 @@ def node_jseval(expr):
     module = 'console.log({});'.format(expr)
     stdout = (
         subprocess
-        .check_output(['node', '-e', six.ensure_str(module)])
+        .check_output(['node', '-e', module])
         .decode('utf8')
     )
     return re.sub(r'\n$', '', stdout)
@@ -75,7 +92,8 @@ class AbstractJSReverseTestCase(object):
             return expected_url(jseval)
 
         self.assertEqual(node_jseval(module), url(node_jseval))
-        self.assertEqual(js2py_jseval('(function () {{ {} }}())'.format(script)), url(js2py_jseval))
+        if js2py is not None:
+            self.assertEqual(js2py_jseval('(function () {{ {} }}())'.format(script)), url(js2py_jseval))
 
     def assertEqualJSUrlEval(self, *args, **kwargs):
         js = smart_str(self.client.post('/jsreverse/').content)
@@ -223,9 +241,8 @@ class JSReverseViewTestCaseMinified(AbstractJSReverseTestCase, TestCase):
         self.assertEqualJSUrlEval('Urls.test_two_url_args(0.00001, 5.5)', get_url)
 
     def test_django_path_syntax(self):
-        if is_django_ver_gte_2():
-            self.assertEqualJSUrlEval('Urls.test_django_gte_2_path_syntax(42, "foo")',
-                                      '/test_django_gte_2_path_syntax/42/foo/')
+        self.assertEqualJSUrlEval('Urls.test_django_gte_2_path_syntax(42, "foo")',
+                                  '/test_django_gte_2_path_syntax/42/foo/')
 
 
 @override_settings(JS_REVERSE_JS_MINIFY=False)
@@ -261,8 +278,8 @@ class JSReverseStaticFileSaveTest(AbstractJSReverseTestCase, TestCase):
         call_command('collectstatic_js_reverse')
 
         path = os.path.join(settings.STATIC_ROOT, 'django_js_reverse', 'js', 'reverse.js')
-        f = io.open(path)
-        content1 = f.read()
+        with io.open(path) as f:
+            content1 = f.read()
 
         r2 = self.client.get('/jsreverse/')
         content2 = r2.content.decode()
@@ -303,12 +320,9 @@ class JSReverseStaticFileSaveTest(AbstractJSReverseTestCase, TestCase):
             self.assertEqualJSUrlEval('Urls.test_no_url_args()', '{0}test_no_url_args/'.format(script_prefix))
 
 
-@override_settings(
-    ROOT_URLCONF='django_js_reverse.tests.test_urls',
-
-    TEMPLATE_CONTEXT_PROCESSORS=['django.core.context_processors.request'],
-)
+@override_settings(ROOT_URLCONF='django_js_reverse.tests.test_urls')
 class JSReverseTemplateTagTest(AbstractJSReverseTestCase, TestCase):
+    @override_settings(TEMPLATES=REQUEST_CONTEXT_PROCESSOR_TEMPLATES)
     def test_tpl_tag_with_request_in_context(self):
         request = RequestFactory().post('/jsreverse/')
         request.urlconf = 'django_js_reverse.tests.test_urlconf_urls'

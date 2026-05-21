@@ -1,3 +1,10 @@
+Unreleased
+----------
+
+- Support Django 5.2 LTS and 6.0 only, dropping unsupported release series.
+- Migrate CI from Travis CI to GitHub Actions and refresh the supported tox matrix.
+- Update package metadata and documentation links to point to the Vinta-maintained fork.
+
 0.10.2 (2023-08-14)
 ---------------------
 

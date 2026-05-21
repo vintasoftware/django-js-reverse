@@ -2,37 +2,17 @@
 import collections
 import json
 import re
-import sys
-if sys.version_info < (3, 7):
-    from distutils.version import LooseVersion
-else:
-    from packaging.version import parse as LooseVersion
-
-import django
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.template import loader
 from django.utils.safestring import mark_safe
-
-if sys.version_info < (3, ):
-    from django.utils.encoding import force_text
-else:
-    from django.utils.encoding import force_str as force_text
+from django.utils.encoding import force_str
 
 from . import rjsmin
 from .js_reverse_settings import (JS_EXCLUDE_NAMESPACES, JS_GLOBAL_OBJECT_NAME,
                                   JS_INCLUDE_ONLY_NAMESPACES, JS_MINIFY,
                                   JS_VAR_NAME)
-
-try:
-    from django import urls as urlresolvers
-except ImportError:
-    from django.core import urlresolvers
-
-if sys.version < '3':
-    text_type = unicode  # NOQA
-else:
-    text_type = str
+from django import urls as urlresolvers
 
 JS_IDENTIFIER_RE = re.compile(r'^[$A-Z_][\dA-Z_$]*$')
 
@@ -81,7 +61,7 @@ def prepare_url_list(urlresolver, namespace_path='', namespace=''):
 
     if include_only_allow:
         for url_name in urlresolver.reverse_dict.keys():
-            if isinstance(url_name, (text_type, str)):
+            if isinstance(url_name, str):
                 url_patterns = []
                 for url_pattern in urlresolver.reverse_dict.getlist(url_name):
                     url_patterns += [
@@ -96,13 +76,11 @@ def prepare_url_list(urlresolver, namespace_path='', namespace=''):
         # if we have inner_ns_path, reconstruct a new resolver so that we can
         # handle regex substitutions within the regex of a namespace.
         if inner_ns_path:
-            args = [inner_ns_path, inner_urlresolver]
-
-            # https://github.com/ierror/django-js-reverse/issues/65
-            if LooseVersion(django.get_version()) >= LooseVersion("2.0.6"):
-                args.append(tuple(urlresolver.pattern.converters.items()))
-
-            inner_urlresolver = urlresolvers.get_ns_resolver(*args)
+            inner_urlresolver = urlresolvers.get_ns_resolver(
+                inner_ns_path,
+                inner_urlresolver,
+                tuple(urlresolver.pattern.converters.items()),
+            )
             inner_ns_path = ''
 
         for x in prepare_url_list(inner_urlresolver, inner_ns_path, inner_ns):
@@ -119,9 +97,9 @@ def generate_json(default_urlresolver, script_prefix=None):
     return collections.OrderedDict([
         ('urls', [
             [
-                force_text(name),
+                force_str(name),
                 [
-                    [force_text(path), [force_text(arg) for arg in args]]
+                    [force_str(path), [force_str(arg) for arg in args]]
                     for path, args in patterns
                 ],
             ] for name, patterns in urls

@@ -2,18 +2,8 @@
 # -*- coding: utf-8 -*-
 import codecs
 import os
-import sys
-from setuptools import setup, find_packages
 
-if sys.version_info < (3, 7):
-    INSTALL_REQUIRES = [
-        'Django>=1.5',
-    ]
-else:
-    INSTALL_REQUIRES = [
-        'Django>=3.2',
-        'packaging>=21.3'
-    ]
+from setuptools import find_packages, setup
 
 
 def read(*parts):
@@ -37,23 +27,38 @@ setup(
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: Implementation :: PyPy',
         'Framework :: Django',
+        'Framework :: Django :: 5.2',
+        'Framework :: Django :: 6.0',
         'Development Status :: 5 - Production/Stable',
-        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
+        'Programming Language :: Python :: 3.14',
     ],
     license='MIT',
     description='Javascript url handling for Django that doesn\'t hurt.',
     long_description=read('README.rst') + '\n\n' + read('CHANGELOG.rst'),
+    long_description_content_type='text/x-rst',
     author='Bernhard Janetzki',
     author_email='boerni@gmail.com',
-    url='https://github.com/ierror/django-js-reverse',
-    download_url='http://pypi.python.org/pypi/django-js-reverse/',
+    maintainer='Vinta Software',
+    maintainer_email='contact@vinta.com.br',
+    url='https://github.com/vintasoftware/django-js-reverse',
+    project_urls={
+        'Source': 'https://github.com/vintasoftware/django-js-reverse',
+        'Tracker': 'https://github.com/vintasoftware/django-js-reverse/issues',
+        'PyPI': 'https://pypi.org/project/django-js-reverse/',
+    },
     packages=find_packages(),
     package_data={
         'django_js_reverse': [
             'templates/django_js_reverse/*',
         ]
     },
-    install_requires=INSTALL_REQUIRES
+    python_requires='>=3.10',
+    install_requires=[
+        'Django>=5.2,<6.1',
+    ],
 )

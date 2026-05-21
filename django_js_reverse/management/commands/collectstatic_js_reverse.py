@@ -7,20 +7,16 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.core.management.base import BaseCommand
+from django.urls import get_resolver
+
 from django_js_reverse.core import generate_js
 from django_js_reverse.js_reverse_settings import JS_OUTPUT_PATH
-
-try:
-    from django.urls import get_resolver
-except ImportError:
-    from django.core.urlresolvers import get_resolver
-
-REQUIRES_SYSTEM_CHECKS = [False]
 
 
 class Command(BaseCommand):
     help = 'Creates a static urls-js file for django-js-reverse'
-    requires_system_checks = REQUIRES_SYSTEM_CHECKS
+    requires_system_checks = []
+
     def get_location(self):
         output_path = getattr(settings, 'JS_REVERSE_OUTPUT_PATH', JS_OUTPUT_PATH)
         if output_path:
